@@ -18,6 +18,7 @@ function RouteComponent() {
   return (
     <div>
       <h1>{user.name}</h1>
+      <h2>{user.email}</h2>
       <Outlet />
     </div>
   )
