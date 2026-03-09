@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteRouteImport } from './routes/app/route'
 import { Route as MarketingIndexRouteImport } from './routes/_marketing/index'
 import { Route as AppOverviewRouteImport } from './routes/app/overview'
+import { Route as ApiUploadthingRouteImport } from './routes/api/uploadthing'
 import { Route as MarketingExploreRouteImport } from './routes/_marketing/explore'
 import { Route as MarketingContactRouteImport } from './routes/_marketing/contact'
 import { Route as MarketingAboutRouteImport } from './routes/_marketing/about'
@@ -36,6 +37,11 @@ const AppOverviewRoute = AppOverviewRouteImport.update({
   id: '/overview',
   path: '/overview',
   getParentRoute: () => AppRouteRoute,
+} as any)
+const ApiUploadthingRoute = ApiUploadthingRouteImport.update({
+  id: '/api/uploadthing',
+  path: '/api/uploadthing',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const MarketingExploreRoute = MarketingExploreRouteImport.update({
   id: '/_marketing/explore',
@@ -93,6 +99,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof MarketingAboutRoute
   '/contact': typeof MarketingContactRoute
   '/explore': typeof MarketingExploreRoute
+  '/api/uploadthing': typeof ApiUploadthingRoute
   '/app/overview': typeof AppOverviewRoute
   '/': typeof MarketingIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -107,6 +114,7 @@ export interface FileRoutesByTo {
   '/about': typeof MarketingAboutRoute
   '/contact': typeof MarketingContactRoute
   '/explore': typeof MarketingExploreRoute
+  '/api/uploadthing': typeof ApiUploadthingRoute
   '/app/overview': typeof AppOverviewRoute
   '/': typeof MarketingIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -122,6 +130,7 @@ export interface FileRoutesById {
   '/_marketing/about': typeof MarketingAboutRoute
   '/_marketing/contact': typeof MarketingContactRoute
   '/_marketing/explore': typeof MarketingExploreRoute
+  '/api/uploadthing': typeof ApiUploadthingRoute
   '/app/overview': typeof AppOverviewRoute
   '/_marketing/': typeof MarketingIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -138,6 +147,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/contact'
     | '/explore'
+    | '/api/uploadthing'
     | '/app/overview'
     | '/'
     | '/api/auth/$'
@@ -152,6 +162,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/contact'
     | '/explore'
+    | '/api/uploadthing'
     | '/app/overview'
     | '/'
     | '/api/auth/$'
@@ -166,6 +177,7 @@ export interface FileRouteTypes {
     | '/_marketing/about'
     | '/_marketing/contact'
     | '/_marketing/explore'
+    | '/api/uploadthing'
     | '/app/overview'
     | '/_marketing/'
     | '/api/auth/$'
@@ -181,6 +193,7 @@ export interface RootRouteChildren {
   MarketingAboutRoute: typeof MarketingAboutRoute
   MarketingContactRoute: typeof MarketingContactRoute
   MarketingExploreRoute: typeof MarketingExploreRoute
+  ApiUploadthingRoute: typeof ApiUploadthingRoute
   MarketingIndexRoute: typeof MarketingIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
@@ -207,6 +220,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/overview'
       preLoaderRoute: typeof AppOverviewRouteImport
       parentRoute: typeof AppRouteRoute
+    }
+    '/api/uploadthing': {
+      id: '/api/uploadthing'
+      path: '/api/uploadthing'
+      fullPath: '/api/uploadthing'
+      preLoaderRoute: typeof ApiUploadthingRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_marketing/explore': {
       id: '/_marketing/explore'
@@ -296,6 +316,7 @@ const rootRouteChildren: RootRouteChildren = {
   MarketingAboutRoute: MarketingAboutRoute,
   MarketingContactRoute: MarketingContactRoute,
   MarketingExploreRoute: MarketingExploreRoute,
+  ApiUploadthingRoute: ApiUploadthingRoute,
   MarketingIndexRoute: MarketingIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }

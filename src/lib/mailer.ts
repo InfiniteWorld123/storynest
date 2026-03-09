@@ -1,6 +1,6 @@
 import { env } from "#/constants/env";
 import { Resend } from "resend";
-import { handleError } from "./error-handler";
+import { handleError } from "../errors/error-handler";
 
 const resend = new Resend(env.RESEND);
 
