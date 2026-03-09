@@ -11,9 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteRouteImport } from './routes/app/route'
 import { Route as MarketingIndexRouteImport } from './routes/_marketing/index'
+import { Route as AppSettingsRouteImport } from './routes/app/settings'
 import { Route as AppOverviewRouteImport } from './routes/app/overview'
 import { Route as ApiUploadthingRouteImport } from './routes/api/uploadthing'
-import { Route as MarketingExploreRouteImport } from './routes/_marketing/explore'
 import { Route as MarketingContactRouteImport } from './routes/_marketing/contact'
 import { Route as MarketingAboutRouteImport } from './routes/_marketing/about'
 import { Route as AuthVerifyEmailRouteImport } from './routes/_auth/verify-email'
@@ -21,7 +21,14 @@ import { Route as AuthSignUpRouteImport } from './routes/_auth/sign-up'
 import { Route as AuthSignInRouteImport } from './routes/_auth/sign-in'
 import { Route as AuthResetPasswordRouteImport } from './routes/_auth/reset-password'
 import { Route as AuthForgotPasswordRouteImport } from './routes/_auth/forgot-password'
+import { Route as AppStoriesRouteRouteImport } from './routes/app/stories/route'
+import { Route as MarketingExploreRouteRouteImport } from './routes/_marketing/explore/route'
+import { Route as AppStoriesReadLaterRouteImport } from './routes/app/stories/read-later'
+import { Route as AppStoriesNewRouteImport } from './routes/app/stories/new'
+import { Route as AppStoriesStoryIdRouteImport } from './routes/app/stories/$storyId'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as MarketingExploreStoryIdRouteImport } from './routes/_marketing/explore/$storyId'
+import { Route as AppStoriesStoryIdEditRouteImport } from './routes/app/stories/$storyId.edit'
 
 const AppRouteRoute = AppRouteRouteImport.update({
   id: '/app',
@@ -33,6 +40,11 @@ const MarketingIndexRoute = MarketingIndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRouteRoute,
+} as any)
 const AppOverviewRoute = AppOverviewRouteImport.update({
   id: '/overview',
   path: '/overview',
@@ -41,11 +53,6 @@ const AppOverviewRoute = AppOverviewRouteImport.update({
 const ApiUploadthingRoute = ApiUploadthingRouteImport.update({
   id: '/api/uploadthing',
   path: '/api/uploadthing',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MarketingExploreRoute = MarketingExploreRouteImport.update({
-  id: '/_marketing/explore',
-  path: '/explore',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MarketingContactRoute = MarketingContactRouteImport.update({
@@ -83,14 +90,51 @@ const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
   path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppStoriesRouteRoute = AppStoriesRouteRouteImport.update({
+  id: '/stories',
+  path: '/stories',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const MarketingExploreRouteRoute = MarketingExploreRouteRouteImport.update({
+  id: '/_marketing/explore',
+  path: '/explore',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppStoriesReadLaterRoute = AppStoriesReadLaterRouteImport.update({
+  id: '/read-later',
+  path: '/read-later',
+  getParentRoute: () => AppStoriesRouteRoute,
+} as any)
+const AppStoriesNewRoute = AppStoriesNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => AppStoriesRouteRoute,
+} as any)
+const AppStoriesStoryIdRoute = AppStoriesStoryIdRouteImport.update({
+  id: '/$storyId',
+  path: '/$storyId',
+  getParentRoute: () => AppStoriesRouteRoute,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MarketingExploreStoryIdRoute = MarketingExploreStoryIdRouteImport.update({
+  id: '/$storyId',
+  path: '/$storyId',
+  getParentRoute: () => MarketingExploreRouteRoute,
+} as any)
+const AppStoriesStoryIdEditRoute = AppStoriesStoryIdEditRouteImport.update({
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => AppStoriesStoryIdRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/app': typeof AppRouteRouteWithChildren
+  '/explore': typeof MarketingExploreRouteRouteWithChildren
+  '/app/stories': typeof AppStoriesRouteRouteWithChildren
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/reset-password': typeof AuthResetPasswordRoute
   '/sign-in': typeof AuthSignInRoute
@@ -98,14 +142,21 @@ export interface FileRoutesByFullPath {
   '/verify-email': typeof AuthVerifyEmailRoute
   '/about': typeof MarketingAboutRoute
   '/contact': typeof MarketingContactRoute
-  '/explore': typeof MarketingExploreRoute
   '/api/uploadthing': typeof ApiUploadthingRoute
   '/app/overview': typeof AppOverviewRoute
+  '/app/settings': typeof AppSettingsRoute
   '/': typeof MarketingIndexRoute
+  '/explore/$storyId': typeof MarketingExploreStoryIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/app/stories/$storyId': typeof AppStoriesStoryIdRouteWithChildren
+  '/app/stories/new': typeof AppStoriesNewRoute
+  '/app/stories/read-later': typeof AppStoriesReadLaterRoute
+  '/app/stories/$storyId/edit': typeof AppStoriesStoryIdEditRoute
 }
 export interface FileRoutesByTo {
   '/app': typeof AppRouteRouteWithChildren
+  '/explore': typeof MarketingExploreRouteRouteWithChildren
+  '/app/stories': typeof AppStoriesRouteRouteWithChildren
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/reset-password': typeof AuthResetPasswordRoute
   '/sign-in': typeof AuthSignInRoute
@@ -113,15 +164,22 @@ export interface FileRoutesByTo {
   '/verify-email': typeof AuthVerifyEmailRoute
   '/about': typeof MarketingAboutRoute
   '/contact': typeof MarketingContactRoute
-  '/explore': typeof MarketingExploreRoute
   '/api/uploadthing': typeof ApiUploadthingRoute
   '/app/overview': typeof AppOverviewRoute
+  '/app/settings': typeof AppSettingsRoute
   '/': typeof MarketingIndexRoute
+  '/explore/$storyId': typeof MarketingExploreStoryIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/app/stories/$storyId': typeof AppStoriesStoryIdRouteWithChildren
+  '/app/stories/new': typeof AppStoriesNewRoute
+  '/app/stories/read-later': typeof AppStoriesReadLaterRoute
+  '/app/stories/$storyId/edit': typeof AppStoriesStoryIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/app': typeof AppRouteRouteWithChildren
+  '/_marketing/explore': typeof MarketingExploreRouteRouteWithChildren
+  '/app/stories': typeof AppStoriesRouteRouteWithChildren
   '/_auth/forgot-password': typeof AuthForgotPasswordRoute
   '/_auth/reset-password': typeof AuthResetPasswordRoute
   '/_auth/sign-in': typeof AuthSignInRoute
@@ -129,16 +187,23 @@ export interface FileRoutesById {
   '/_auth/verify-email': typeof AuthVerifyEmailRoute
   '/_marketing/about': typeof MarketingAboutRoute
   '/_marketing/contact': typeof MarketingContactRoute
-  '/_marketing/explore': typeof MarketingExploreRoute
   '/api/uploadthing': typeof ApiUploadthingRoute
   '/app/overview': typeof AppOverviewRoute
+  '/app/settings': typeof AppSettingsRoute
   '/_marketing/': typeof MarketingIndexRoute
+  '/_marketing/explore/$storyId': typeof MarketingExploreStoryIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/app/stories/$storyId': typeof AppStoriesStoryIdRouteWithChildren
+  '/app/stories/new': typeof AppStoriesNewRoute
+  '/app/stories/read-later': typeof AppStoriesReadLaterRoute
+  '/app/stories/$storyId/edit': typeof AppStoriesStoryIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/app'
+    | '/explore'
+    | '/app/stories'
     | '/forgot-password'
     | '/reset-password'
     | '/sign-in'
@@ -146,14 +211,21 @@ export interface FileRouteTypes {
     | '/verify-email'
     | '/about'
     | '/contact'
-    | '/explore'
     | '/api/uploadthing'
     | '/app/overview'
+    | '/app/settings'
     | '/'
+    | '/explore/$storyId'
     | '/api/auth/$'
+    | '/app/stories/$storyId'
+    | '/app/stories/new'
+    | '/app/stories/read-later'
+    | '/app/stories/$storyId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/app'
+    | '/explore'
+    | '/app/stories'
     | '/forgot-password'
     | '/reset-password'
     | '/sign-in'
@@ -161,14 +233,21 @@ export interface FileRouteTypes {
     | '/verify-email'
     | '/about'
     | '/contact'
-    | '/explore'
     | '/api/uploadthing'
     | '/app/overview'
+    | '/app/settings'
     | '/'
+    | '/explore/$storyId'
     | '/api/auth/$'
+    | '/app/stories/$storyId'
+    | '/app/stories/new'
+    | '/app/stories/read-later'
+    | '/app/stories/$storyId/edit'
   id:
     | '__root__'
     | '/app'
+    | '/_marketing/explore'
+    | '/app/stories'
     | '/_auth/forgot-password'
     | '/_auth/reset-password'
     | '/_auth/sign-in'
@@ -176,15 +255,21 @@ export interface FileRouteTypes {
     | '/_auth/verify-email'
     | '/_marketing/about'
     | '/_marketing/contact'
-    | '/_marketing/explore'
     | '/api/uploadthing'
     | '/app/overview'
+    | '/app/settings'
     | '/_marketing/'
+    | '/_marketing/explore/$storyId'
     | '/api/auth/$'
+    | '/app/stories/$storyId'
+    | '/app/stories/new'
+    | '/app/stories/read-later'
+    | '/app/stories/$storyId/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AppRouteRoute: typeof AppRouteRouteWithChildren
+  MarketingExploreRouteRoute: typeof MarketingExploreRouteRouteWithChildren
   AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   AuthSignInRoute: typeof AuthSignInRoute
@@ -192,7 +277,6 @@ export interface RootRouteChildren {
   AuthVerifyEmailRoute: typeof AuthVerifyEmailRoute
   MarketingAboutRoute: typeof MarketingAboutRoute
   MarketingContactRoute: typeof MarketingContactRoute
-  MarketingExploreRoute: typeof MarketingExploreRoute
   ApiUploadthingRoute: typeof ApiUploadthingRoute
   MarketingIndexRoute: typeof MarketingIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -214,6 +298,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MarketingIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/settings': {
+      id: '/app/settings'
+      path: '/settings'
+      fullPath: '/app/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
     '/app/overview': {
       id: '/app/overview'
       path: '/overview'
@@ -226,13 +317,6 @@ declare module '@tanstack/react-router' {
       path: '/api/uploadthing'
       fullPath: '/api/uploadthing'
       preLoaderRoute: typeof ApiUploadthingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_marketing/explore': {
-      id: '/_marketing/explore'
-      path: '/explore'
-      fullPath: '/explore'
-      preLoaderRoute: typeof MarketingExploreRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_marketing/contact': {
@@ -284,6 +368,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/stories': {
+      id: '/app/stories'
+      path: '/stories'
+      fullPath: '/app/stories'
+      preLoaderRoute: typeof AppStoriesRouteRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_marketing/explore': {
+      id: '/_marketing/explore'
+      path: '/explore'
+      fullPath: '/explore'
+      preLoaderRoute: typeof MarketingExploreRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app/stories/read-later': {
+      id: '/app/stories/read-later'
+      path: '/read-later'
+      fullPath: '/app/stories/read-later'
+      preLoaderRoute: typeof AppStoriesReadLaterRouteImport
+      parentRoute: typeof AppStoriesRouteRoute
+    }
+    '/app/stories/new': {
+      id: '/app/stories/new'
+      path: '/new'
+      fullPath: '/app/stories/new'
+      preLoaderRoute: typeof AppStoriesNewRouteImport
+      parentRoute: typeof AppStoriesRouteRoute
+    }
+    '/app/stories/$storyId': {
+      id: '/app/stories/$storyId'
+      path: '/$storyId'
+      fullPath: '/app/stories/$storyId'
+      preLoaderRoute: typeof AppStoriesStoryIdRouteImport
+      parentRoute: typeof AppStoriesRouteRoute
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -291,23 +410,82 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_marketing/explore/$storyId': {
+      id: '/_marketing/explore/$storyId'
+      path: '/$storyId'
+      fullPath: '/explore/$storyId'
+      preLoaderRoute: typeof MarketingExploreStoryIdRouteImport
+      parentRoute: typeof MarketingExploreRouteRoute
+    }
+    '/app/stories/$storyId/edit': {
+      id: '/app/stories/$storyId/edit'
+      path: '/edit'
+      fullPath: '/app/stories/$storyId/edit'
+      preLoaderRoute: typeof AppStoriesStoryIdEditRouteImport
+      parentRoute: typeof AppStoriesStoryIdRoute
+    }
   }
 }
 
+interface AppStoriesStoryIdRouteChildren {
+  AppStoriesStoryIdEditRoute: typeof AppStoriesStoryIdEditRoute
+}
+
+const AppStoriesStoryIdRouteChildren: AppStoriesStoryIdRouteChildren = {
+  AppStoriesStoryIdEditRoute: AppStoriesStoryIdEditRoute,
+}
+
+const AppStoriesStoryIdRouteWithChildren =
+  AppStoriesStoryIdRoute._addFileChildren(AppStoriesStoryIdRouteChildren)
+
+interface AppStoriesRouteRouteChildren {
+  AppStoriesStoryIdRoute: typeof AppStoriesStoryIdRouteWithChildren
+  AppStoriesNewRoute: typeof AppStoriesNewRoute
+  AppStoriesReadLaterRoute: typeof AppStoriesReadLaterRoute
+}
+
+const AppStoriesRouteRouteChildren: AppStoriesRouteRouteChildren = {
+  AppStoriesStoryIdRoute: AppStoriesStoryIdRouteWithChildren,
+  AppStoriesNewRoute: AppStoriesNewRoute,
+  AppStoriesReadLaterRoute: AppStoriesReadLaterRoute,
+}
+
+const AppStoriesRouteRouteWithChildren = AppStoriesRouteRoute._addFileChildren(
+  AppStoriesRouteRouteChildren,
+)
+
 interface AppRouteRouteChildren {
+  AppStoriesRouteRoute: typeof AppStoriesRouteRouteWithChildren
   AppOverviewRoute: typeof AppOverviewRoute
+  AppSettingsRoute: typeof AppSettingsRoute
 }
 
 const AppRouteRouteChildren: AppRouteRouteChildren = {
+  AppStoriesRouteRoute: AppStoriesRouteRouteWithChildren,
   AppOverviewRoute: AppOverviewRoute,
+  AppSettingsRoute: AppSettingsRoute,
 }
 
 const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(
   AppRouteRouteChildren,
 )
 
+interface MarketingExploreRouteRouteChildren {
+  MarketingExploreStoryIdRoute: typeof MarketingExploreStoryIdRoute
+}
+
+const MarketingExploreRouteRouteChildren: MarketingExploreRouteRouteChildren = {
+  MarketingExploreStoryIdRoute: MarketingExploreStoryIdRoute,
+}
+
+const MarketingExploreRouteRouteWithChildren =
+  MarketingExploreRouteRoute._addFileChildren(
+    MarketingExploreRouteRouteChildren,
+  )
+
 const rootRouteChildren: RootRouteChildren = {
   AppRouteRoute: AppRouteRouteWithChildren,
+  MarketingExploreRouteRoute: MarketingExploreRouteRouteWithChildren,
   AuthForgotPasswordRoute: AuthForgotPasswordRoute,
   AuthResetPasswordRoute: AuthResetPasswordRoute,
   AuthSignInRoute: AuthSignInRoute,
@@ -315,7 +493,6 @@ const rootRouteChildren: RootRouteChildren = {
   AuthVerifyEmailRoute: AuthVerifyEmailRoute,
   MarketingAboutRoute: MarketingAboutRoute,
   MarketingContactRoute: MarketingContactRoute,
-  MarketingExploreRoute: MarketingExploreRoute,
   ApiUploadthingRoute: ApiUploadthingRoute,
   MarketingIndexRoute: MarketingIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,

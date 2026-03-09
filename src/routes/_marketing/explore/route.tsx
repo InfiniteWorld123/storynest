@@ -1,15 +1,15 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { Filter, Search } from 'lucide-react'
 
-import { StoryCard } from '../../components/cards/story-card'
-import { SectionHeading } from '../../components/common/section-heading'
-import { Container } from '../../components/layout/container'
-import { SiteLayout } from '../../components/layout/site-layout'
-import { Reveal } from '../../components/motion/reveal'
-import { Button } from '../../components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
-import { Input } from '../../components/ui/input'
-import { Separator } from '../../components/ui/separator'
+import { StoryCard } from '../../../components/cards/story-card'
+import { SectionHeading } from '../../../components/common/section-heading'
+import { Container } from '../../../components/layout/container'
+import { SiteLayout } from '../../../components/layout/site-layout'
+import { Reveal } from '../../../components/motion/reveal'
+import { Button } from '../../../components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
+import { Input } from '../../../components/ui/input'
+import { Separator } from '../../../components/ui/separator'
 import {
   Sheet,
   SheetContent,
@@ -17,8 +17,8 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from '../../components/ui/sheet'
-import { categories, allStories } from '../../data/mock-content'
+} from '../../../components/ui/sheet'
+import { categories, allStories } from '../../../data/mock-content'
 
 export const Route = createFileRoute('/_marketing/explore')({
   component: ExplorePage,
