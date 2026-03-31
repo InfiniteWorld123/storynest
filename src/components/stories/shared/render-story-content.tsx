@@ -1,10 +1,18 @@
-import type { StoryContent } from '../data/stories-mock'
+import type { StoryContent } from '#/types/story'
 
 // ─── Render TipTap JSON → React elements ─────────────────────────────────────
 // Single source of truth for story body rendering.
 // Used by: public-story-detail-page, story-viewer-sheet
 // When adding new TipTap node types (image, table, etc.) update only this file.
 export function renderStoryContent(content: StoryContent) {
+  if (!content || !Array.isArray(content.content)) {
+    return (
+      <p className="mb-5 font-serif text-base leading-[1.85] sm:text-lg" style={{ color: 'var(--foreground)' }}>
+        Story content is not available yet.
+      </p>
+    )
+  }
+
   return content.content.map((block, i) => {
     if (block.type === 'heading') {
       const level = (block.attrs?.level as number) ?? 2

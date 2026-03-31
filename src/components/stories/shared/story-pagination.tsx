@@ -18,6 +18,7 @@ export type StoryPaginationProps = {
   totalItems: number        // mirrors pagination.total
   itemsPerPage: number      // mirrors pagination.limit
   onPageChange: (page: number) => void
+  onPagePrefetch?: (page: number) => void
 }
 
 // ─── Page number range builder ────────────────────────────────────────────────
@@ -45,6 +46,7 @@ export function StoryPagination({
   totalItems,
   itemsPerPage,
   onPageChange,
+  onPagePrefetch,
 }: StoryPaginationProps) {
   if (totalPages <= 1) return null
 
@@ -89,7 +91,10 @@ export function StoryPagination({
                   : { border: '1px solid var(--border)', color: 'var(--foreground)' }
               }
               onMouseEnter={e => {
-                if (currentPage !== 1) e.currentTarget.style.backgroundColor = 'var(--muted)'
+                if (currentPage !== 1) {
+                  e.currentTarget.style.backgroundColor = 'var(--muted)'
+                  onPagePrefetch?.(currentPage - 1)
+                }
               }}
               onMouseLeave={e => {
                 e.currentTarget.style.backgroundColor = 'transparent'
@@ -126,7 +131,10 @@ export function StoryPagination({
                         }
                   }
                   onMouseEnter={e => {
-                    if (page !== currentPage) e.currentTarget.style.backgroundColor = 'var(--muted)'
+                    if (page !== currentPage) {
+                      e.currentTarget.style.backgroundColor = 'var(--muted)'
+                      onPagePrefetch?.(page)
+                    }
                   }}
                   onMouseLeave={e => {
                     if (page !== currentPage) e.currentTarget.style.backgroundColor = 'transparent'
@@ -149,7 +157,10 @@ export function StoryPagination({
                   : { border: '1px solid var(--border)', color: 'var(--foreground)' }
               }
               onMouseEnter={e => {
-                if (currentPage !== totalPages) e.currentTarget.style.backgroundColor = 'var(--muted)'
+                if (currentPage !== totalPages) {
+                  e.currentTarget.style.backgroundColor = 'var(--muted)'
+                  onPagePrefetch?.(currentPage + 1)
+                }
               }}
               onMouseLeave={e => {
                 e.currentTarget.style.backgroundColor = 'transparent'

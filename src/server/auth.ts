@@ -2,7 +2,7 @@ import { HttpStatusCode } from "#/constants/http";
 import { jsonOk } from "#/constants/json";
 import { env } from "#/constants/env";
 import { unauthorizedError } from "#/errors/app-error";
-import { auth } from "#/lib/auth";
+import type { auth } from "#/lib/auth.server";
 import { catchAsyncFn } from "#/errors/error-handler";
 import type { ServerOk } from "#/server/_types";
 import {
@@ -40,6 +40,7 @@ export const signUp = createServerFn({ method: "POST" })
   .inputValidator(SignUpSchema)
   .handler(
     catchAsyncFn(async ({ data }): ServerOk<SignUpResult> => {
+      const { auth } = await import("#/lib/auth.server");
       const result = await auth.api.signUpEmail({
         body: {
           name: data.name,
@@ -61,6 +62,7 @@ export const signIn = createServerFn({ method: "POST" })
   .inputValidator(SignInSchema)
   .handler(
     catchAsyncFn(async ({ data }): ServerOk<SignInResult> => {
+      const { auth } = await import("#/lib/auth.server");
       const headers = getRequestHeaders();
       const result = await auth.api.signInEmail({
         body: {
@@ -81,6 +83,7 @@ export const signIn = createServerFn({ method: "POST" })
 
 export const signOut = createServerFn({ method: "POST" }).handler(
   catchAsyncFn(async (): ServerOk<SignOutResult> => {
+    const { auth } = await import("#/lib/auth.server");
     const headers = getRequestHeaders();
     const result = await auth.api.signOut({ headers });
 
@@ -96,6 +99,7 @@ export const forgotPassword = createServerFn({ method: "POST" })
   .inputValidator(EmailSchema)
   .handler(
     catchAsyncFn(async ({ data }): ServerOk<ForgotPasswordResult> => {
+      const { auth } = await import("#/lib/auth.server");
       const result = await auth.api.requestPasswordReset({
         body: {
           email: data.email,
@@ -115,6 +119,7 @@ export const resetPassword = createServerFn({ method: "POST" })
   .inputValidator(resetPasswordServerSchema)
   .handler(
     catchAsyncFn(async ({ data }): ServerOk<ResetPasswordResult> => {
+      const { auth } = await import("#/lib/auth.server");
       const result = await auth.api.resetPassword({
         body: {
           newPassword: data.password,
@@ -132,6 +137,7 @@ export const resetPassword = createServerFn({ method: "POST" })
 
 export const getSession = createServerFn({ method: "GET" }).handler(
   async (): Promise<SessionResult> => {
+    const { auth } = await import("#/lib/auth.server");
     const headers = getRequestHeaders();
     return auth.api.getSession({ headers });
   },
@@ -139,6 +145,7 @@ export const getSession = createServerFn({ method: "GET" }).handler(
 
 export const ensureSession = createServerFn({ method: "GET" }).handler(
   async (): Promise<NonNullable<SessionResult>> => {
+    const { auth } = await import("#/lib/auth.server");
     const headers = getRequestHeaders();
     const session = await auth.api.getSession({ headers });
 

@@ -27,7 +27,7 @@ export const StoryContentSchema = storyContentSchema;
 export const createStorySchema = z.object({
   title: titleSchema,
   description: descriptionSchema,
-  categoryId: storyCategoryEnum,
+  categoryId: idSchema,
   content: StoryContentSchema,
   coverImageUrl: coverImageUrlSchema,
 });
@@ -38,10 +38,14 @@ export const getStorySchema = z.object({
 
 export const getStoriesSchema = z.object({
   category: storyCategoryEnum.optional(),
-  title: z.string().optional(),
+  search: z.string().optional(),
   sort: storySortSchema.optional().default("newest"),
   page: pageSchema,
   limit: limitSchema,
+});
+
+export const getOverviewStatsSchema = z.object({
+  recentLimit: z.number().int().positive().max(20).optional().default(3),
 });
 
 export const updateStorySchema = z
@@ -49,7 +53,7 @@ export const updateStorySchema = z
     storyId: idSchema,
     title: titleSchema.optional(),
     description: descriptionSchema.optional(),
-    categoryId: storyCategoryEnum.optional(),
+    categoryId: idSchema.optional(),
     content: StoryContentSchema.optional(),
     coverImageUrl: coverImageUrlSchema,
   })
@@ -72,6 +76,7 @@ export const deleteStorySchema = z.object({
 export type CreateStoryData = z.infer<typeof createStorySchema>;
 export type UpdateStoryData = z.infer<typeof updateStorySchema>;
 export type GetStoriesData = z.infer<typeof getStoriesSchema>;
+export type GetOverviewStatsData = z.infer<typeof getOverviewStatsSchema>;
 export type GetStoryData = z.infer<typeof getStorySchema>;
 export type DeleteStoryData = z.infer<typeof deleteStorySchema>;
 

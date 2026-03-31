@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Link } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Bookmark, BookOpen, ChevronDown, LayoutGrid, List, Search, X } from 'lucide-react'
-import { MOCK_STORIES, type Story } from '#/components/stories/data/stories-mock'
+import type { StoryContent, StoryListItem } from '#/types/story'
 import { StoryGridCard } from '#/components/stories/shared/story-grid-card'
 import { StoryListCard } from '#/components/stories/shared/story-list-card'
 import { StoryPagination } from '#/components/stories/shared/story-pagination'
@@ -16,9 +16,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '#/components/ui/dropdown-menu'
-
-// TODO: increase to 10 (or desired limit) when wiring to getStories({ page, limit })
-const ITEMS_PER_PAGE = 3
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { publicStoriesQueryOptions, Route as PublicStoriesRoute } from '#/routes/_marketing/stories'
+import { removeReadLater, saveReadLater } from '#/server/readLater'
+import { authClient } from '#/lib/auth-client'
 
 const CATEGORY_FILTERS = [
   { label: 'All', slug: '' },
@@ -33,32 +34,11 @@ const CATEGORY_FILTERS = [
 const SORT_OPTIONS = [
   { label: 'Newest first', value: 'newest' },
   { label: 'Oldest first', value: 'oldest' },
-  { label: 'Recently updated', value: 'updated' },
   { label: 'Title A → Z', value: 'az' },
+  { label: 'Title Z → A', value: 'za' },
 ] as const
 
 type SortValue = (typeof SORT_OPTIONS)[number]['value']
-
-function applyFilters(stories: Story[], search: string, category: string, sort: SortValue): Story[] {
-  let result = [...stories]
-  if (category) result = result.filter(story => story.category.slug === category)
-  if (search.trim()) {
-    const query = search.trim().toLowerCase()
-    result = result.filter(
-      story =>
-        story.title.toLowerCase().includes(query) ||
-        story.description.toLowerCase().includes(query),
-    )
-  }
-  result.sort((a, b) => {
-    if (sort === 'newest') return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    if (sort === 'oldest') return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-    if (sort === 'updated') return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-    if (sort === 'az') return a.title.localeCompare(b.title)
-    return 0
-  })
-  return result
-}
 
 function NoResults({ onClear }: { onClear: () => void }) {
   return (
@@ -141,46 +121,186 @@ function ReadStoryLink({ storyId }: { storyId: string }) {
 }
 
 export function PublicStoryListPage() {
+  const queryClient = useQueryClient()
+  const navigate = PublicStoriesRoute.useNavigate()
+  const searchParams = PublicStoriesRoute.useSearch()
+  const sessionQuery = authClient.useSession()
   const [viewMode, setViewMode] = React.useState<'list' | 'grid'>('list')
-  const [search, setSearch] = React.useState('')
-  const [activeCategory, setActiveCategory] = React.useState('')
-  const [sort, setSort] = React.useState<SortValue>('newest')
-  const [currentPage, setCurrentPage] = React.useState(1)
-  // Track saved stories by ID (wire to saveReadLater / removeReadLater when ready)
-  const [savedStories, setSavedStories] = React.useState<Set<string>>(new Set())
-
-  function toggleSaved(storyId: string) {
-    setSavedStories(prev => {
-      const next = new Set(prev)
-      if (next.has(storyId)) next.delete(storyId)
-      else next.add(storyId)
-      return next
-      // TODO: wire to saveReadLater({ storyId }) or removeReadLater({ storyId })
-    })
-  }
+  const [searchInput, setSearchInput] = React.useState(searchParams.search ?? '')
+  const [pendingSort, setPendingSort] = React.useState<SortValue | null>(null)
+  const [pendingCategory, setPendingCategory] = React.useState<string | null>(null)
+  const viewerUser = sessionQuery.data?.user
 
   const searchRef = React.useRef<HTMLInputElement>(null)
 
-  const filteredStories = React.useMemo(
-    () => applyFilters(MOCK_STORIES, search, activeCategory, sort),
-    [search, activeCategory, sort],
+  const { data, isPending, isFetching, error } = useQuery(publicStoriesQueryOptions(searchParams))
+
+  React.useEffect(() => {
+    setSearchInput(searchParams.search ?? '')
+  }, [searchParams.search])
+
+  const updateSearch = React.useCallback(
+    (updater: (prev: typeof searchParams) => typeof searchParams) => {
+      navigate({ search: updater })
+    },
+    [navigate],
   )
 
-  // Reset to page 1 whenever filters change
-  React.useEffect(() => { setCurrentPage(1) }, [search, activeCategory, sort])
+  React.useEffect(() => {
+    if (!isFetching) {
+      setPendingSort(null)
+      setPendingCategory(null)
+    }
+  }, [isFetching])
 
-  const totalPages = Math.max(1, Math.ceil(filteredStories.length / ITEMS_PER_PAGE))
-  const pagedStories = filteredStories.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE,
-  )
+  React.useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      const nextSearch = searchInput.trim() ? searchInput.trim() : undefined
+      const currentSearch = searchParams.search?.trim() || undefined
+      if (nextSearch === currentSearch) {
+        return
+      }
+      updateSearch((prev) => ({
+        ...prev,
+        page: 1,
+        search: nextSearch,
+      }))
+    }, 350)
+    return () => window.clearTimeout(timeoutId)
+  }, [searchInput, searchParams.search, updateSearch])
 
-  const isFiltered = search.trim() !== '' || activeCategory !== ''
-  const currentSortLabel = SORT_OPTIONS.find(option => option.value === sort)?.label ?? 'Newest first'
+  const stories: StoryListItem[] = (data?.stories ?? []).map((story) => ({
+    id: story.id,
+    userId: story.userId,
+    categoryId: story.categoryId,
+    title: story.title,
+    description: story.description,
+    content: story.content as StoryContent,
+    coverImageUrl: story.coverImageUrl,
+    createdAt: new Date(story.createdAt).toISOString(),
+    updatedAt: new Date(story.updatedAt).toISOString(),
+    category: story.category,
+    stats: story.stats,
+  }))
+
+  const isFiltered = Boolean(searchParams.search?.trim()) || Boolean(searchParams.category)
+  const currentSortLabel = SORT_OPTIONS.find(option => option.value === searchParams.sort)?.label ?? 'Newest first'
+  const currentPage = data?.pagination.page ?? 1
+  const totalPages = data?.pagination.totalPages ?? 1
+
+  const prefetchPage = React.useCallback((page: number) => {
+    if (page < 1 || page > totalPages || page === currentPage) return
+    void queryClient.prefetchQuery(publicStoriesQueryOptions({ ...searchParams, page }))
+  }, [currentPage, queryClient, searchParams, totalPages])
+
+  const prefetchCategory = React.useCallback((category: typeof searchParams.category | undefined) => {
+    if (category === searchParams.category) return
+    void queryClient.prefetchQuery(publicStoriesQueryOptions({ ...searchParams, page: 1, category }))
+  }, [queryClient, searchParams])
+
+  const prefetchSort = React.useCallback((sort: SortValue) => {
+    if (sort === searchParams.sort) return
+    void queryClient.prefetchQuery(publicStoriesQueryOptions({ ...searchParams, page: 1, sort }))
+  }, [queryClient, searchParams])
+
+  const saveMutation = useMutation({
+    mutationFn: async ({
+      storyId,
+      isSaved,
+    }: {
+      storyId: string
+      isSaved: boolean
+    }) => {
+      if (isSaved) {
+        await removeReadLater({ data: { storyId } })
+        return false
+      }
+      await saveReadLater({ data: { storyId } })
+      return true
+    },
+    onMutate: async ({
+      storyId,
+      isSaved,
+    }: {
+      storyId: string
+      isSaved: boolean
+    }) => {
+      const previous = queryClient.getQueriesData({ queryKey: ['stories', 'public'] })
+
+      queryClient.setQueriesData({ queryKey: ['stories', 'public'] }, (old: unknown) => {
+        if (!old || typeof old !== 'object') return old
+        const value = old as { stories?: StoryListItem[] }
+        if (!Array.isArray(value.stories)) return old
+
+        const nextSaved = !isSaved
+
+        return {
+          ...value,
+          stories: value.stories.map((story) => {
+            if (story.id !== storyId || !story.stats) return story
+            return {
+              ...story,
+              stats: {
+                ...story.stats,
+                isSaved: nextSaved,
+                saves: Math.max(0, story.stats.saves + (nextSaved ? 1 : -1)),
+              },
+            }
+          }),
+        }
+      })
+
+      return { previous }
+    },
+    onError: (_error, _vars, context) => {
+      context?.previous?.forEach(([key, value]) => {
+        queryClient.setQueryData(key, value)
+      })
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: ['stories', 'public'] })
+      void queryClient.invalidateQueries({ queryKey: ['story', 'public'] })
+      void queryClient.invalidateQueries({ queryKey: ['read-later', 'me'] })
+      void queryClient.invalidateQueries({ queryKey: ['read-later', 'count', 'me'] })
+    },
+  })
+
+  function handleToggleSaved(story: StoryListItem) {
+    if (!viewerUser) {
+      window.location.assign('/sign-in')
+      return
+    }
+    if (!story.stats || saveMutation.isPending) {
+      return
+    }
+
+    saveMutation.mutate({
+      storyId: story.id,
+      isSaved: story.stats.isSaved,
+    })
+  }
+
+  if (error) throw error
+  if (isPending || !data) {
+    return (
+      <section className="mx-auto max-w-7xl px-6 py-12 lg:px-8">
+        <p className="font-sans text-sm" style={{ color: 'var(--muted-foreground)' }}>
+          Loading stories...
+        </p>
+      </section>
+    )
+  }
 
   function clearFilters() {
-    setSearch('')
-    setActiveCategory('')
+    setSearchInput('')
+    navigate({
+      search: (prev) => ({
+        ...prev,
+        page: 1,
+        category: undefined,
+        search: undefined,
+      }),
+    })
   }
 
   return (
@@ -235,8 +355,8 @@ export function PublicStoryListPage() {
             <Input
               ref={searchRef}
               type="text"
-              value={search}
-              onChange={event => setSearch(event.target.value)}
+              value={searchInput}
+              onChange={event => setSearchInput(event.target.value)}
               placeholder="Search stories…"
               className="h-9 w-full pl-8 pr-8 font-sans text-sm"
               style={{
@@ -246,7 +366,7 @@ export function PublicStoryListPage() {
               aria-label="Search stories"
             />
             <AnimatePresence>
-              {search && (
+              {searchInput && (
                 <motion.button
                   key="clear-search"
                   initial={{ opacity: 0, scale: 0.8 }}
@@ -255,7 +375,8 @@ export function PublicStoryListPage() {
                   transition={{ duration: 0.15 }}
                   type="button"
                   onClick={() => {
-                    setSearch('')
+                    setSearchInput('')
+                    updateSearch((prev) => ({ ...prev, page: 1, search: undefined }))
                     searchRef.current?.focus()
                   }}
                   className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-0.5"
@@ -287,11 +408,20 @@ export function PublicStoryListPage() {
               {SORT_OPTIONS.map(option => (
                 <DropdownMenuItem
                   key={option.value}
-                  onSelect={() => setSort(option.value)}
+                  onMouseEnter={() => prefetchSort(option.value)}
+                  onSelect={() => {
+                    setPendingSort(option.value)
+                    updateSearch((prev) => ({ ...prev, page: 1, sort: option.value }))
+                  }}
                   className="font-sans text-sm"
                   style={{
-                    fontWeight: sort === option.value ? '600' : undefined,
-                    color: sort === option.value ? 'var(--accent-warm)' : undefined,
+                    backgroundColor:
+                      pendingSort === option.value
+                        ? 'var(--muted)'
+                        : searchParams.sort === option.value
+                          ? 'var(--muted)'
+                          : 'transparent',
+                    fontWeight: searchParams.sort === option.value ? '600' : undefined,
                   }}
                 >
                   {option.label}
@@ -331,18 +461,38 @@ export function PublicStoryListPage() {
 
         <div className="flex flex-wrap items-center gap-2 px-4 py-3 sm:px-5">
           {CATEGORY_FILTERS.map(category => {
-            const isActive = activeCategory === category.slug
+            const isActive = (searchParams.category ?? '') === category.slug
             return (
               <Button
                 key={category.slug}
                 type="button"
                 variant={isActive ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => setActiveCategory(category.slug)}
+                onMouseEnter={() =>
+                  prefetchCategory(category.slug ? (category.slug as typeof searchParams.category) : undefined)
+                }
+                onClick={() => {
+                  setPendingCategory(category.slug || '')
+                  updateSearch((prev) => ({
+                    ...prev,
+                    page: 1,
+                    category: category.slug ? (category.slug as typeof prev.category) : undefined,
+                  }))
+                }}
                 className="h-8 rounded-full px-3 font-sans text-xs font-semibold transition-all duration-150"
                 style={{
-                  backgroundColor: isActive ? 'var(--foreground)' : 'var(--background)',
-                  color: isActive ? 'var(--background)' : 'var(--foreground)',
+                  backgroundColor:
+                    pendingCategory === category.slug
+                      ? 'var(--muted)'
+                      : isActive
+                        ? 'var(--foreground)'
+                        : 'var(--background)',
+                  color:
+                    pendingCategory === category.slug
+                      ? 'var(--foreground)'
+                      : isActive
+                        ? 'var(--background)'
+                        : 'var(--foreground)',
                   border: '1px solid var(--border)',
                 }}
               >
@@ -366,24 +516,24 @@ export function PublicStoryListPage() {
             <p className="font-sans text-sm" style={{ color: 'var(--muted-foreground)' }}>
               Showing{' '}
               <span className="font-semibold" style={{ color: 'var(--foreground)' }}>
-                {filteredStories.length}
+                {data.pagination.total}
               </span>{' '}
-              {filteredStories.length === 1 ? 'story' : 'stories'}
-              {activeCategory && (
+              {data.pagination.total === 1 ? 'story' : 'stories'}
+              {searchParams.category && (
                 <>
                   {' '}
                   in{' '}
                   <span className="font-semibold" style={{ color: 'var(--foreground)' }}>
-                    {CATEGORY_FILTERS.find(category => category.slug === activeCategory)?.label}
+                    {CATEGORY_FILTERS.find(category => category.slug === searchParams.category)?.label}
                   </span>
                 </>
               )}
-              {search.trim() && (
+              {searchParams.search?.trim() && (
                 <>
                   {' '}
                   matching{' '}
                   <span className="font-semibold" style={{ color: 'var(--foreground)' }}>
-                    &ldquo;{search.trim()}&rdquo;
+                    &ldquo;{searchParams.search.trim()}&rdquo;
                   </span>
                 </>
               )}
@@ -401,8 +551,13 @@ export function PublicStoryListPage() {
       </AnimatePresence>
 
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.28, delay: 0.12 }}>
+        {isFetching && (
+          <div className="mb-3 font-sans text-xs" style={{ color: 'var(--muted-foreground)' }}>
+            Updating stories...
+          </div>
+        )}
         <AnimatePresence mode="wait">
-          {filteredStories.length === 0 ? (
+          {stories.length === 0 ? (
             <NoResults key="public-empty" onClear={clearFilters} />
           ) : viewMode === 'list' ? (
             <motion.div
@@ -419,7 +574,7 @@ export function PublicStoryListPage() {
               }}
             >
               <AnimatePresence>
-                {pagedStories.map((story, index) => (
+                {stories.map((story, index) => (
                   <StoryListCard
                     key={story.id}
                     story={story}
@@ -427,8 +582,8 @@ export function PublicStoryListPage() {
                     primaryAction={
                       <div className="flex items-center gap-1.5">
                         <SaveStoryButton
-                          isSaved={savedStories.has(story.id)}
-                          onToggle={() => toggleSaved(story.id)}
+                          isSaved={story.stats?.isSaved ?? false}
+                          onToggle={() => handleToggleSaved(story)}
                         />
                         <ReadStoryLink storyId={story.id} />
                       </div>
@@ -447,7 +602,7 @@ export function PublicStoryListPage() {
               className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
             >
               <AnimatePresence>
-                {pagedStories.map((story, index) => (
+                {stories.map((story, index) => (
                   <StoryGridCard
                     key={story.id}
                     story={story}
@@ -455,8 +610,8 @@ export function PublicStoryListPage() {
                     primaryAction={
                       <div className="flex items-center gap-1.5">
                         <SaveStoryButton
-                          isSaved={savedStories.has(story.id)}
-                          onToggle={() => toggleSaved(story.id)}
+                          isSaved={story.stats?.isSaved ?? false}
+                          onToggle={() => handleToggleSaved(story)}
                         />
                         <ReadStoryLink storyId={story.id} />
                       </div>
@@ -468,14 +623,15 @@ export function PublicStoryListPage() {
           )}
         </AnimatePresence>
 
-        {filteredStories.length > 0 && (
+        {stories.length > 0 && (
           <StoryPagination
-            currentPage={currentPage}
+            currentPage={data.pagination.page}
             totalPages={totalPages}
-            totalItems={filteredStories.length}
-            itemsPerPage={ITEMS_PER_PAGE}
+            totalItems={data.pagination.total}
+            itemsPerPage={data.pagination.limit}
+            onPagePrefetch={prefetchPage}
             onPageChange={page => {
-              setCurrentPage(page)
+              updateSearch((prev) => ({ ...prev, page }))
               window.scrollTo({ top: 0, behavior: 'smooth' })
             }}
           />

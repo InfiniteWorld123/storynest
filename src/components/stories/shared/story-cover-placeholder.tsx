@@ -1,6 +1,34 @@
 import { BookOpen } from 'lucide-react'
 
-export function StoryCoverPlaceholder({ tall = false }: { tall?: boolean }) {
+export function StoryCoverPlaceholder({
+  tall = false,
+  coverImageUrl,
+  title = 'Story cover',
+}: {
+  tall?: boolean
+  coverImageUrl?: string | null
+  title?: string
+}) {
+  if (coverImageUrl) {
+    return (
+      <div
+        className="shrink-0 overflow-hidden rounded-[var(--radius)]"
+        style={{
+          width: tall ? '100%' : '52px',
+          height: tall ? '112px' : '72px',
+          backgroundColor: 'var(--muted)',
+        }}
+      >
+        <img
+          src={coverImageUrl}
+          alt={title}
+          className="h-full w-full object-cover"
+          loading="lazy"
+        />
+      </div>
+    )
+  }
+
   return (
     <div
       className="flex shrink-0 items-center justify-center rounded-[var(--radius)]"
@@ -15,4 +43,3 @@ export function StoryCoverPlaceholder({ tall = false }: { tall?: boolean }) {
     </div>
   )
 }
-

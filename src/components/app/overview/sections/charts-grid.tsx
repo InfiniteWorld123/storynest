@@ -27,7 +27,7 @@ export function ChartsGrid({
           Trends & Analytics
         </h2>
         <p className='text-sm' style={{ color: 'var(--muted-foreground)' }}>
-          Visual trends from static sample data, ready for backend wiring later.
+          Visual trends from your current StoryNest activity.
         </p>
       </div>
 

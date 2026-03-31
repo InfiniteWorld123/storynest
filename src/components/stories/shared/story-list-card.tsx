@@ -1,11 +1,11 @@
 import type { ReactNode } from 'react'
 import { motion } from 'framer-motion'
-import type { Story } from '#/components/stories/data/stories-mock'
-import { formatDate } from '#/components/stories/data/stories-mock'
+import type { StoryListItem } from '#/types/story'
+import { formatStoryDate } from '#/types/story'
 import { StoryCoverPlaceholder } from './story-cover-placeholder'
 
 type StoryListCardProps = {
-  story: Story
+  story: StoryListItem
   index: number
   primaryAction?: ReactNode
 }
@@ -28,7 +28,7 @@ export function StoryListCard({ story, index, primaryAction }: StoryListCardProp
         style={{ backgroundColor: 'var(--accent-warm)' }}
       />
 
-      <StoryCoverPlaceholder />
+      <StoryCoverPlaceholder coverImageUrl={story.coverImageUrl} title={story.title} />
 
       <div className="min-w-0 flex-1">
         <span
@@ -54,7 +54,7 @@ export function StoryListCard({ story, index, primaryAction }: StoryListCardProp
 
         <div className="mt-3 flex items-center justify-between gap-2">
           <span className="font-mono text-xs" style={{ color: 'var(--muted-foreground)' }}>
-            {formatDate(story.createdAt)}
+            {formatStoryDate(story.createdAt)}
           </span>
           {primaryAction}
         </div>
@@ -62,4 +62,3 @@ export function StoryListCard({ story, index, primaryAction }: StoryListCardProp
     </motion.div>
   )
 }
-

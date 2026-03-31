@@ -37,7 +37,33 @@ export const coverImageUrlSchema = z
     .url('Cover image must be a valid URL')
     .optional()
 
-export const storyContentSchema = z.record(z.string(), z.unknown())
+const storyMarkSchema = z.object({
+    type: z.string().min(1),
+    attrs: z.record(z.string(), z.any()).optional(),
+})
+
+type StoryNode = {
+    type: string
+    text?: string
+    attrs?: Record<string, {}>
+    marks?: Array<{ type: string; attrs?: Record<string, {}> }>
+    content?: StoryNode[]
+}
+
+const storyNodeSchema: z.ZodType<StoryNode> = z.lazy(() =>
+    z.object({
+        type: z.string().min(1),
+        text: z.string().optional(),
+        attrs: z.record(z.string(), z.any()).optional(),
+        marks: z.array(storyMarkSchema).optional(),
+        content: z.array(storyNodeSchema).optional(),
+    }),
+)
+
+export const storyContentSchema = z.object({
+    type: z.literal('doc'),
+    content: z.array(storyNodeSchema).default([]),
+})
 
 export const BASE_SORT_VALUES = [
     'newest',

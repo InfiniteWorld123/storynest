@@ -9,7 +9,7 @@ export function Leaderboards({ groups }: { groups: OverviewLeaderboardGroup[] })
           Leaderboards
         </h2>
         <p className='text-sm' style={{ color: 'var(--muted-foreground)' }}>
-          Top stories by likes, saves, and comments using account-level sample data.
+          Top stories by likes, saves, and comments from your account activity.
         </p>
       </div>
 

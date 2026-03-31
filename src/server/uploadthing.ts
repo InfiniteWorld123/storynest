@@ -1,6 +1,5 @@
 import { createUploadthing, UploadThingError } from "uploadthing/server";
 import type { FileRouter } from "uploadthing/server";
-import { auth } from "#/lib/auth";
 
 const f = createUploadthing();
 
@@ -12,6 +11,7 @@ export const uploadRouter = {
     },
   })
     .middleware(async ({ req }) => {
+      const { auth } = await import("#/lib/auth.server");
       const session = await auth.api.getSession({ headers: req.headers });
 
       if (!session) {

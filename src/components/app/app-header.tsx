@@ -12,16 +12,30 @@ import { useRouterState, useNavigate } from "@tanstack/react-router";
 import { Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
-
-const MOCK_USER = { name: "Alex Morgan", initials: "AM" };
+import { authClient, signOut } from "#/lib/auth-client";
+import { toast } from "sonner";
 
 const PAGE_TITLES: Record<string, string> = {
-  "/app/overview":    "Overview",
-  "/app/stories":     "My Stories",
+  "/app/overview": "Overview",
+  "/app/stories": "My Stories",
   "/app/stories/new": "New Story",
-  "/app/read-later":  "Read Later",
-  "/app/settings":    "Settings",
+  "/app/read-later": "Read Later",
+  "/app/settings": "Settings",
 };
+
+function getInitials(name: string) {
+  const parts = name
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2);
+
+  if (!parts.length) {
+    return "W";
+  }
+
+  return parts.map((part) => part[0]?.toUpperCase() ?? "").join("");
+}
 
 function usePageTitle() {
   const { location } = useRouterState();
@@ -73,7 +87,37 @@ function SearchBar() {
 
 function UserAvatar() {
   const navigate = useNavigate();
+  const { data: sessionData, isPending } = authClient.useSession();
   const [hovered, setHovered] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
+
+  const displayName = sessionData?.user?.name?.trim() || "Writer";
+  const initials = getInitials(displayName);
+
+  async function handleSignOut() {
+    if (isSigningOut) {
+      return;
+    }
+
+    setIsSigningOut(true);
+
+    try {
+      await signOut({
+        fetchOptions: { throw: true },
+      });
+
+      toast.success("Signed out successfully.");
+      navigate({ to: "/" });
+    } catch (error) {
+      const maybeMessage =
+        error && typeof error === "object" && "message" in error
+          ? String((error as { message?: unknown }).message)
+          : "Failed to sign out.";
+      toast.error(maybeMessage || "Failed to sign out.");
+    } finally {
+      setIsSigningOut(false);
+    }
+  }
 
   return (
     <DropdownMenu>
@@ -87,14 +131,12 @@ function UserAvatar() {
           transition={{ type: "spring", stiffness: 400, damping: 20 }}
           aria-label="Open user menu"
         >
-          {/* Ring */}
           <motion.span
             className="pointer-events-none absolute inset-0 rounded-full"
             style={{ boxShadow: "0 0 0 2px var(--accent-warm)" }}
             animate={{ opacity: hovered ? 1 : 0 }}
             transition={{ duration: 0.15 }}
           />
-          {/* Initials */}
           <span
             className="flex size-full items-center justify-center rounded-full
                        font-sans text-[11px] font-bold uppercase tracking-wider select-none"
@@ -104,7 +146,7 @@ function UserAvatar() {
               border: "1.5px solid var(--border)",
             }}
           >
-            {MOCK_USER.initials}
+            {initials}
           </span>
         </motion.button>
       </DropdownMenuTrigger>
@@ -112,7 +154,7 @@ function UserAvatar() {
       <DropdownMenuContent align="end" className="min-w-44">
         <DropdownMenuLabel>
           <span className="block font-sans text-xs font-semibold">
-            {MOCK_USER.name}
+            {isPending ? "Loading…" : displayName}
           </span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
@@ -121,10 +163,13 @@ function UserAvatar() {
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          onSelect={() => navigate({ to: "/" })}
+          disabled={isSigningOut}
+          onSelect={() => {
+            void handleSignOut();
+          }}
           className="text-destructive"
         >
-          <span className="text-sm">Sign out</span>
+          <span className="text-sm">{isSigningOut ? "Signing out…" : "Sign out"}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -142,7 +187,6 @@ export function AppHeader() {
       className="flex h-14 shrink-0 items-center gap-3 px-4"
       style={{ borderBottom: "1px solid var(--border)" }}
     >
-      {/* Sidebar trigger */}
       <motion.div whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.93 }}>
         <SidebarTrigger
           className="-ml-1 text-muted-foreground hover:text-foreground
@@ -150,13 +194,11 @@ export function AppHeader() {
         />
       </motion.div>
 
-      {/* Divider */}
       <span
         className="h-4 w-px shrink-0 opacity-30"
         style={{ backgroundColor: "var(--foreground)" }}
       />
 
-      {/* Page title — animated on route change */}
       <AnimatePresence mode="wait">
         <motion.h1
           key={pageTitle}
@@ -171,13 +213,9 @@ export function AppHeader() {
         </motion.h1>
       </AnimatePresence>
 
-      {/* Right controls */}
       <div className="ml-auto flex items-center gap-1">
         <SearchBar />
-
-        {/* Theme toggle */}
         <ThemeToggle />
-
         <UserAvatar />
       </div>
     </motion.header>

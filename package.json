@@ -9,7 +9,10 @@
     "dev": "vite dev --port 3000",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "check": "pnpm typecheck && pnpm test && pnpm build",
+    "db:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "^1.5.3",

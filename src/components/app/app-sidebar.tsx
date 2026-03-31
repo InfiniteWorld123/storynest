@@ -1,3 +1,4 @@
+import * as React from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -11,23 +12,33 @@ import {
   SidebarRail,
 } from "#/components/ui/sidebar";
 import { Link, useRouterState } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import {
   BookMarked,
   BookOpen,
   Bookmark,
   LayoutDashboard,
   Settings,
+  type LucideIcon,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { getMyReadLaterCount } from "#/server/readLater";
 
 const smoothEase: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
-const NAV_ITEMS = [
-  { label: "Overview",   to: "/app/overview",   icon: LayoutDashboard, badge: undefined },
-  { label: "My Stories", to: "/app/stories",    icon: BookOpen,        badge: undefined },
-  { label: "Read Later", to: "/app/read-later", icon: Bookmark,        badge: 3         },
-  { label: "Settings",   to: "/app/settings",   icon: Settings,        badge: undefined },
-] as const;
+type NavItemConfig = {
+  label: string;
+  to: string;
+  icon: LucideIcon;
+  badge?: number;
+};
+
+const NAV_ITEMS: NavItemConfig[] = [
+  { label: "Overview", to: "/app/overview", icon: LayoutDashboard },
+  { label: "My Stories", to: "/app/stories", icon: BookOpen },
+  { label: "Read Later", to: "/app/read-later", icon: Bookmark },
+  { label: "Settings", to: "/app/settings", icon: Settings },
+];
 
 const containerVariants = {
   hidden: {},
@@ -58,7 +69,7 @@ function NavItem({
   item,
   isActive,
 }: {
-  item: (typeof NAV_ITEMS)[number];
+  item: NavItemConfig;
   isActive: boolean;
 }) {
   const Icon = item.icon;
@@ -150,6 +161,30 @@ function NavItem({
 export function AppSidebar() {
   const { location } = useRouterState();
   const pathname = location.pathname;
+  const { data: readLaterCount } = useQuery({
+    queryKey: ["read-later", "count", "me"],
+    queryFn: async () => {
+      const res = await getMyReadLaterCount();
+      return res.data.total;
+    },
+    staleTime: 10_000,
+  });
+
+  const navItems = React.useMemo(
+    () =>
+      NAV_ITEMS.map((item) =>
+        item.to === "/app/read-later"
+          ? {
+              ...item,
+              badge:
+                typeof readLaterCount === "number" && readLaterCount > 0
+                  ? readLaterCount
+                  : undefined,
+            }
+          : item,
+      ),
+    [readLaterCount],
+  );
 
   return (
     <Sidebar collapsible="icon">
@@ -220,7 +255,7 @@ export function AppSidebar() {
                 initial="hidden"
                 animate="visible"
               >
-                {NAV_ITEMS.map((item) => {
+                {navItems.map((item) => {
                   const isActive =
                     pathname === item.to ||
                     (item.to === "/app/stories" &&

@@ -1,4 +1,4 @@
-import { HeadContent, Outlet, Scripts, createRootRoute } from '@tanstack/react-router'
+import { HeadContent, Outlet, Scripts, createRootRouteWithContext } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
 import {
   QueryClient,
@@ -10,7 +10,11 @@ import '../styles.css'
 import { ThemeProvider } from '../components/theme/theme-provider'
 import { Toaster } from 'sonner'
 
-export const Route = createRootRoute({
+interface MyRouterContext {
+  queryClient: QueryClient
+}
+
+export const Route = createRootRouteWithContext<MyRouterContext>()({
   head: () => ({
     meta: [
       {
@@ -36,8 +40,10 @@ export const Route = createRootRoute({
 })
 
 function RootComponent() {
+  const { queryClient } = Route.useRouteContext()
+
   return (
-    <RootDocument>
+    <RootDocument queryClient={queryClient}>
       <ThemeProvider defaultTheme='system'>
         <Outlet />
       </ThemeProvider>
@@ -45,9 +51,7 @@ function RootComponent() {
   )
 }
 
-const queryClient = new QueryClient();
-
-function RootDocument({ children }: { children: ReactNode }) {
+function RootDocument({ children, queryClient }: { children: ReactNode, queryClient: QueryClient }) {
   return (
     <html lang='en' suppressHydrationWarning>
       <head>

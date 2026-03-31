@@ -13,6 +13,14 @@ export const auth = betterAuth({
         provider: "pg",
         schema,
     }),
+    user: {
+        changeEmail: {
+            enabled: true,
+        },
+        deleteUser: {
+            enabled: true,
+        },
+    },
     emailAndPassword: {
         enabled: true,
         requireEmailVerification: true,
@@ -29,7 +37,6 @@ export const auth = betterAuth({
         autoSignInAfterVerification: true,
         sendOnSignUp: true,
         sendVerificationEmail: async ({ user, url }, _request) => {
-            console.log("sendVerificationEmail", url);
             await sendEmail({
                 to: user.email,
                 subject: "Verify your email",

@@ -15,6 +15,7 @@ import { Route as AppSettingsRouteImport } from './routes/app/settings'
 import { Route as AppReadLaterRouteImport } from './routes/app/read-later'
 import { Route as AppOverviewRouteImport } from './routes/app/overview'
 import { Route as ApiUploadthingRouteImport } from './routes/api/uploadthing'
+import { Route as ApiSeedStoriesRouteImport } from './routes/api/seed-stories'
 import { Route as MarketingContactRouteImport } from './routes/_marketing/contact'
 import { Route as MarketingAboutRouteImport } from './routes/_marketing/about'
 import { Route as AuthVerifyEmailRouteImport } from './routes/_auth/verify-email'
@@ -24,6 +25,7 @@ import { Route as AuthResetPasswordRouteImport } from './routes/_auth/reset-pass
 import { Route as AuthForgotPasswordRouteImport } from './routes/_auth/forgot-password'
 import { Route as AppStoriesIndexRouteImport } from './routes/app/stories/index'
 import { Route as MarketingStoriesIndexRouteImport } from './routes/_marketing/stories/index'
+import { Route as AppStoryNewRouteImport } from './routes/app/story/new'
 import { Route as AppStoriesNewRouteImport } from './routes/app/stories/new'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as MarketingStoriesStoryIdRouteImport } from './routes/_marketing/stories/$storyId'
@@ -57,6 +59,11 @@ const AppOverviewRoute = AppOverviewRouteImport.update({
 const ApiUploadthingRoute = ApiUploadthingRouteImport.update({
   id: '/api/uploadthing',
   path: '/api/uploadthing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSeedStoriesRoute = ApiSeedStoriesRouteImport.update({
+  id: '/api/seed-stories',
+  path: '/api/seed-stories',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MarketingContactRoute = MarketingContactRouteImport.update({
@@ -104,6 +111,11 @@ const MarketingStoriesIndexRoute = MarketingStoriesIndexRouteImport.update({
   path: '/stories/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppStoryNewRoute = AppStoryNewRouteImport.update({
+  id: '/story/new',
+  path: '/story/new',
+  getParentRoute: () => AppRouteRoute,
+} as any)
 const AppStoriesNewRoute = AppStoriesNewRouteImport.update({
   id: '/stories/new',
   path: '/stories/new',
@@ -134,6 +146,7 @@ export interface FileRoutesByFullPath {
   '/verify-email': typeof AuthVerifyEmailRoute
   '/about': typeof MarketingAboutRoute
   '/contact': typeof MarketingContactRoute
+  '/api/seed-stories': typeof ApiSeedStoriesRoute
   '/api/uploadthing': typeof ApiUploadthingRoute
   '/app/overview': typeof AppOverviewRoute
   '/app/read-later': typeof AppReadLaterRoute
@@ -142,6 +155,7 @@ export interface FileRoutesByFullPath {
   '/stories/$storyId': typeof MarketingStoriesStoryIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/app/stories/new': typeof AppStoriesNewRoute
+  '/app/story/new': typeof AppStoryNewRoute
   '/stories/': typeof MarketingStoriesIndexRoute
   '/app/stories/': typeof AppStoriesIndexRoute
   '/app/stories/$storyId/edit': typeof AppStoriesStoryIdEditRoute
@@ -155,6 +169,7 @@ export interface FileRoutesByTo {
   '/verify-email': typeof AuthVerifyEmailRoute
   '/about': typeof MarketingAboutRoute
   '/contact': typeof MarketingContactRoute
+  '/api/seed-stories': typeof ApiSeedStoriesRoute
   '/api/uploadthing': typeof ApiUploadthingRoute
   '/app/overview': typeof AppOverviewRoute
   '/app/read-later': typeof AppReadLaterRoute
@@ -163,6 +178,7 @@ export interface FileRoutesByTo {
   '/stories/$storyId': typeof MarketingStoriesStoryIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/app/stories/new': typeof AppStoriesNewRoute
+  '/app/story/new': typeof AppStoryNewRoute
   '/stories': typeof MarketingStoriesIndexRoute
   '/app/stories': typeof AppStoriesIndexRoute
   '/app/stories/$storyId/edit': typeof AppStoriesStoryIdEditRoute
@@ -177,6 +193,7 @@ export interface FileRoutesById {
   '/_auth/verify-email': typeof AuthVerifyEmailRoute
   '/_marketing/about': typeof MarketingAboutRoute
   '/_marketing/contact': typeof MarketingContactRoute
+  '/api/seed-stories': typeof ApiSeedStoriesRoute
   '/api/uploadthing': typeof ApiUploadthingRoute
   '/app/overview': typeof AppOverviewRoute
   '/app/read-later': typeof AppReadLaterRoute
@@ -185,6 +202,7 @@ export interface FileRoutesById {
   '/_marketing/stories/$storyId': typeof MarketingStoriesStoryIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/app/stories/new': typeof AppStoriesNewRoute
+  '/app/story/new': typeof AppStoryNewRoute
   '/_marketing/stories/': typeof MarketingStoriesIndexRoute
   '/app/stories/': typeof AppStoriesIndexRoute
   '/app/stories/$storyId/edit': typeof AppStoriesStoryIdEditRoute
@@ -200,6 +218,7 @@ export interface FileRouteTypes {
     | '/verify-email'
     | '/about'
     | '/contact'
+    | '/api/seed-stories'
     | '/api/uploadthing'
     | '/app/overview'
     | '/app/read-later'
@@ -208,6 +227,7 @@ export interface FileRouteTypes {
     | '/stories/$storyId'
     | '/api/auth/$'
     | '/app/stories/new'
+    | '/app/story/new'
     | '/stories/'
     | '/app/stories/'
     | '/app/stories/$storyId/edit'
@@ -221,6 +241,7 @@ export interface FileRouteTypes {
     | '/verify-email'
     | '/about'
     | '/contact'
+    | '/api/seed-stories'
     | '/api/uploadthing'
     | '/app/overview'
     | '/app/read-later'
@@ -229,6 +250,7 @@ export interface FileRouteTypes {
     | '/stories/$storyId'
     | '/api/auth/$'
     | '/app/stories/new'
+    | '/app/story/new'
     | '/stories'
     | '/app/stories'
     | '/app/stories/$storyId/edit'
@@ -242,6 +264,7 @@ export interface FileRouteTypes {
     | '/_auth/verify-email'
     | '/_marketing/about'
     | '/_marketing/contact'
+    | '/api/seed-stories'
     | '/api/uploadthing'
     | '/app/overview'
     | '/app/read-later'
@@ -250,6 +273,7 @@ export interface FileRouteTypes {
     | '/_marketing/stories/$storyId'
     | '/api/auth/$'
     | '/app/stories/new'
+    | '/app/story/new'
     | '/_marketing/stories/'
     | '/app/stories/'
     | '/app/stories/$storyId/edit'
@@ -264,6 +288,7 @@ export interface RootRouteChildren {
   AuthVerifyEmailRoute: typeof AuthVerifyEmailRoute
   MarketingAboutRoute: typeof MarketingAboutRoute
   MarketingContactRoute: typeof MarketingContactRoute
+  ApiSeedStoriesRoute: typeof ApiSeedStoriesRoute
   ApiUploadthingRoute: typeof ApiUploadthingRoute
   MarketingIndexRoute: typeof MarketingIndexRoute
   MarketingStoriesStoryIdRoute: typeof MarketingStoriesStoryIdRoute
@@ -313,6 +338,13 @@ declare module '@tanstack/react-router' {
       path: '/api/uploadthing'
       fullPath: '/api/uploadthing'
       preLoaderRoute: typeof ApiUploadthingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/seed-stories': {
+      id: '/api/seed-stories'
+      path: '/api/seed-stories'
+      fullPath: '/api/seed-stories'
+      preLoaderRoute: typeof ApiSeedStoriesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_marketing/contact': {
@@ -378,6 +410,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MarketingStoriesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/story/new': {
+      id: '/app/story/new'
+      path: '/story/new'
+      fullPath: '/app/story/new'
+      preLoaderRoute: typeof AppStoryNewRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
     '/app/stories/new': {
       id: '/app/stories/new'
       path: '/stories/new'
@@ -414,6 +453,7 @@ interface AppRouteRouteChildren {
   AppReadLaterRoute: typeof AppReadLaterRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppStoriesNewRoute: typeof AppStoriesNewRoute
+  AppStoryNewRoute: typeof AppStoryNewRoute
   AppStoriesIndexRoute: typeof AppStoriesIndexRoute
   AppStoriesStoryIdEditRoute: typeof AppStoriesStoryIdEditRoute
 }
@@ -423,6 +463,7 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppReadLaterRoute: AppReadLaterRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppStoriesNewRoute: AppStoriesNewRoute,
+  AppStoryNewRoute: AppStoryNewRoute,
   AppStoriesIndexRoute: AppStoriesIndexRoute,
   AppStoriesStoryIdEditRoute: AppStoriesStoryIdEditRoute,
 }
@@ -440,6 +481,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthVerifyEmailRoute: AuthVerifyEmailRoute,
   MarketingAboutRoute: MarketingAboutRoute,
   MarketingContactRoute: MarketingContactRoute,
+  ApiSeedStoriesRoute: ApiSeedStoriesRoute,
   ApiUploadthingRoute: ApiUploadthingRoute,
   MarketingIndexRoute: MarketingIndexRoute,
   MarketingStoriesStoryIdRoute: MarketingStoriesStoryIdRoute,

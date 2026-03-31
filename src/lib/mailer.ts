@@ -8,15 +8,17 @@ type SendEmailProps = {
     to: string;
     subject: string;
     html: string;
+    replyTo?: string;
 }
 
-export const sendEmail = async ({ to, subject, html }: SendEmailProps) => {
+export const sendEmail = async ({ to, subject, html, replyTo }: SendEmailProps) => {
     try {
         const { error } = await resend.emails.send({
-            from: "Yaman Warda <noreply@yamanwarda.dev>",
+            from: env.EMAIL_FROM,
             to,
             subject,
             html,
+            replyTo,
         })
         if (error) throw error;
     } catch (error) {

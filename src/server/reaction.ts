@@ -88,7 +88,6 @@ export const toggleReaction = createServerFn({ method: "POST" })
   );
 
 export const getReactionsCount = createServerFn({ method: "GET" })
-  .middleware([authMiddleware])
   .inputValidator(getReactionsCountSchema)
   .handler(
     catchAsyncFn(

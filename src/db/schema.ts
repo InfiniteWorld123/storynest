@@ -10,6 +10,7 @@ import {
   uniqueIndex,
   primaryKey,
 } from "drizzle-orm/pg-core";
+import type { StoryContent } from "#/types/story";
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -112,7 +113,7 @@ export const story = pgTable(
       .references(() => storyCategory.id, { onDelete: "restrict" }),
     title: text("title").notNull(),
     description: text("description").notNull(),
-    content: jsonb("content").$type<Record<string, unknown>>().notNull(),
+    content: jsonb("content").$type<StoryContent>().notNull(),
     coverImageUrl: text("cover_image_url"),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true })
